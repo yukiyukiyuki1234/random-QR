@@ -24,8 +24,10 @@
   <div id="qrcode"></div>
   <div id="count"></div>
 
+  <!-- ★ここを追加（ダウンロードリンク） -->
+  <p><a id="downloadLink" href="" download>QR画像をダウンロード</a></p>
+
   <script>
-    // 生成済みコードを記録（ブラウザに保存）
     const usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]");
     let count = parseInt(localStorage.getItem("count") || "0");
 
@@ -37,7 +39,7 @@
         for (let i = 0; i < length; i++) {
           code += chars[Math.floor(Math.random() * chars.length)];
         }
-      } while (usedCodes.includes(code)); // 重複禁止
+      } while (usedCodes.includes(code));
 
       usedCodes.push(code);
       localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
@@ -59,8 +61,10 @@
       count++;
       localStorage.setItem("count", count);
       document.getElementById("count").textContent = `番号: ${count}`;
+
+      // ★ここを追加（PNG画像のダウンロードリンクを設定）
+      document.getElementById("downloadLink").href = code + ".png";
     });
   </script>
 </body>
 </html>
-
