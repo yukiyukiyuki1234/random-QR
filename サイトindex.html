@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ランダムQRコード生成サイト</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    #qrcode {
+      margin-top: 20px;
+    }
+    #codeText {
+      margin-top: 10px;
+      font-size: 24px;
+      letter-spacing: 0.15em;
+    }
+  </style>
+</head>
+<body>
+  <h1>ランダムQRコード（8桁英数字）</h1>
+  <div id="qrcode"></div>
+  <div id="codeText"></div>
+
+  <script>
+    function generateRandomCode(length) {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return result;
+    }
+
+    window.addEventListener("load", () => {
+      const code = generateRandomCode(8);
+      document.getElementById("codeText").textContent = code;
+
+      new QRCode(document.getElementById("qrcode"), {
+        text: code,
+        width: 256,
+        height: 256,
+        colorDark: "#000",
+        colorLight: "#fff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    });
+  </script>
+</body>
+</html>
