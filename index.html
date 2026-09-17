@@ -15,29 +15,34 @@
       margin: 0;
       background: #f0f0f0;
     }
-    #qrcode {
-      margin-top: 20px;
-    }
-    #codeText {
-      margin-top: 10px;
-      font-size: 24px;
-      letter-spacing: 0.15em;
-    }
+    #qrcode { margin-top: 20px; }
+    #codeText { margin-top: 10px; font-size: 24px; letter-spacing: 0.15em; }
+    #count { margin-top: 10px; font-size: 18px; color: #333; }
   </style>
 </head>
 <body>
   <h1>ランダムQRコード（8桁英数字）</h1>
   <div id="qrcode"></div>
   <div id="codeText"></div>
+  <div id="count"></div>
 
   <script>
+    // 生成済みコードを記録（ブラウザに保存）
+    const usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]");
+    let count = parseInt(localStorage.getItem("count") || "0");
+
     function generateRandomCode(length) {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let result = "";
-      for (let i = 0; i < length; i++) {
-        result += chars[Math.floor(Math.random() * chars.length)];
-      }
-      return result;
+      let code;
+      do {
+        code = "";
+        for (let i = 0; i < length; i++) {
+          code += chars[Math.floor(Math.random() * chars.length)];
+        }
+      } while (usedCodes.includes(code)); // 重複チェック
+      usedCodes.push(code);
+      localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
+      return code;
     }
 
     window.addEventListener("load", () => {
@@ -52,6 +57,10 @@
         colorLight: "#fff",
         correctLevel: QRCode.CorrectLevel.H
       });
+
+      count++;
+      localStorage.setItem("count", count);
+      document.getElementById("count").textContent = `表示回数: ${count}`;
     });
   </script>
 </body>
