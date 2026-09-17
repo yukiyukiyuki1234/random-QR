@@ -16,14 +16,12 @@
       background: #f0f0f0;
     }
     #qrcode { margin-top: 20px; }
-    #codeText { margin-top: 10px; font-size: 24px; letter-spacing: 0.15em; }
     #count { margin-top: 10px; font-size: 18px; color: #333; }
   </style>
 </head>
 <body>
   <h1>ランダムQRコード（8桁英数字）</h1>
   <div id="qrcode"></div>
-  <div id="codeText"></div>
   <div id="count"></div>
 
   <script>
@@ -39,7 +37,8 @@
         for (let i = 0; i < length; i++) {
           code += chars[Math.floor(Math.random() * chars.length)];
         }
-      } while (usedCodes.includes(code)); // 重複チェック
+      } while (usedCodes.includes(code)); // 重複禁止
+
       usedCodes.push(code);
       localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
       return code;
@@ -47,7 +46,6 @@
 
     window.addEventListener("load", () => {
       const code = generateRandomCode(8);
-      document.getElementById("codeText").textContent = code;
 
       new QRCode(document.getElementById("qrcode"), {
         text: code,
@@ -65,3 +63,4 @@
   </script>
 </body>
 </html>
+
