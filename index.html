@@ -76,3 +76,31 @@
   </script>
 </body>
 </html>
+
+document
+.getElementById("csvButton")
+.addEventListener("click", () => {
+ 
+let csv = "番号,コード,発行日時\n";
+ 
+history.forEach(item => {
+csv += `${item.no},${item.code},${item.date}\n`;
+});
+ 
+const blob = new Blob(
+[csv],
+{ type: "text/csv;charset=utf-8;" }
+);
+ 
+const url = URL.createObjectURL(blob);
+ 
+const a = document.createElement("a");
+a.href = url;
+a.download = "qr_history.csv";
+ 
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+ 
+URL.revokeObjectURL(url);
+});
