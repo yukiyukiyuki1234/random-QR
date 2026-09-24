@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ランダムQRコード生成サイト</title>
+  <title>ランダムQRコード生成</title>
+  <!-- QRCode.jsライブラリ（CDN） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body {
@@ -13,67 +14,51 @@
       justify-content: center;
       height: 100vh;
       margin: 0;
-      background: #f0f0f0;
+      background: #f5f5f5;
     }
-    #qrcode { margin-top: 20px; }
-    #count { margin-top: 10px; font-size: 18px; color: #333; }
+    #qrcode {
+      margin-top: 16px;
+    }
+    .code-text {
+      margin-top: 8px;
+      font-size: 20px;
+      letter-spacing: 0.15em;
+    }
   </style>
 </head>
 <body>
   <h1>ランダムQRコード（8桁英数字）</h1>
-  <p style="font-size: 20px; color: #444;">番号覚えてね！</p>
   <div id="qrcode"></div>
-  <div id="count"></div>
-
-  <!-- ★ダウンロードリンクを追加 -->
-  <p><a id="downloadLink" href="" download>QR画像をダウンロード</a></p>
+  <div class="code-text" id="codeText"></div>
 
   <script>
-    const usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]");
-    let count = parseInt(localStorage.getItem("count") || "0");
-
+    // 8桁の英数字ランダム文字列を生成
     function generateRandomCode(length) {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let code;
-      do {
-        code = "";
-        for (let i = 0; i < length; i++) {
-          code += chars[Math.floor(Math.random() * chars.length)];
-        }
-      } while (usedCodes.includes(code));
-
-      usedCodes.push(code);
-      localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
-      return code;
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        const idx = Math.floor(Math.random() * chars.length);
+        result += chars[idx];
+      }
+      return result;
     }
 
-    window.addEventListener("load", () => {
-      const code = generateRandomCode(8);
-      const qrContainer = document.getElementById("qrcode");
+    // ページ読み込み時に実行
+    window.addEventListener("load", function () {
+      const randomCode = generateRandomCode(8); // 8桁
+      // 文字列を画面に表示
+      document.getElementById("codeText").textContent = randomCode;
 
-      new QRCode(qrContainer, {
-        text: code,
+      // QRコード生成
+      new QRCode(document.getElementById("qrcode"), {
+        text: randomCode,
         width: 256,
         height: 256,
-        colorDark: "#000",
-        colorLight: "#fff",
+        colorDark: "#000000",
+        colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
       });
-
-      count++;
-      localStorage.setItem("count", count);
-      document.getElementById("count").textContent = `番号: ${count}`;
-
-      // ★スマホ対応：QRコードを画像化してダウンロードリンクに設定
-      setTimeout(() => {
-        const canvas = qrContainer.querySelector("canvas");
-        const imageURL = canvas.toDataURL("image/png");
-        const link = document.getElementById("downloadLink");
-        link.href = imageURL;
-        link.download = `${code}.png`;
-      }, 500);
     });
   </script>
 </body>
 </html>
-
