@@ -1,67 +1,40 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>ランダムQRコード生成</title>
-  <!-- QRCode.jsライブラリ（CDN） -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: #f5f5f5;
-    }
-    #qrcode {
-      margin-top: 16px;
-    }
-    .code-text {
-      margin-top: 8px;
-      font-size: 20px;
-      letter-spacing: 0.15em;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>ランダム文字列QR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+#code { font-size: 32px; margin: 20px; }
+</style>
 </head>
 <body>
-  <h1>ランダムQRコード（8桁英数字）</h1>
-   <p style="font-size: 20px; color: #444;">番号覚えてね！</p>
-  <div id="qrcode"></div>
-  <div class="code-text" id="codeText"></div>
- 　<button id="downloadBtn">QRコードを保存</button>
-  const imageUrl = canvas.toDataURL("image/png");
 
-  <script>
-    // 8桁の英数字ランダム文字列を生成
-    function generateRandomCode(length) {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let result = "";
-      for (let i = 0; i < length; i++) {
-        const idx = Math.floor(Math.random() * chars.length);
-        result += chars[idx];
-      }
-      return result;
-    }
+<h1>ランダム文字列とQRコード</h1>
 
-    // ページ読み込み時に実行
-    window.addEventListener("load", function () {
-      const randomCode = generateRandomCode(8); // 8桁
-      // 文字列を画面に表示
-      document.getElementById("codeText").textContent = randomCode;
+<div id="code">生成中...</div>
+<div id="qrcode"></div>
 
-      // QRコード生成
-      new QRCode(document.getElementById("qrcode"), {
-        text: randomCode,
-        width: 256,
-        height: 256,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    });
-  </script>
+<script>
+// 8桁ランダム文字列生成
+function randomString() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let s = "";
+  for (let i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
+
+const text = randomString();
+document.getElementById("code").textContent = text;
+
+// QRコード生成
+new QRCode(document.getElementById("qrcode"), {
+  text: text,
+  width: 200,
+  height: 200
+});
+</script>
+
 </body>
 </html>
