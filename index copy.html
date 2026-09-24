@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>QR表示システム</title>
+</head>
+<body>
+
+<div id="login">
+    <h2>ログイン</h2>
+    <input type="password" id="password" placeholder="パスワード">
+    <button onclick="checkPassword()">ログイン</button>
+</div>
+
+<div id="content" style="display:none;">
+    <h2>認証成功</h2>
+
+    <p>番号: 12345678</p>
+
+    <imgleQR.png
+</div>
+
+<script>
+function checkPassword() {
+    const password = document.getElementById("password").value;
+
+    if(password === "yuki1234"){
+        document.getElementById("login").style.display = "none";
+        document.getElementById("content").style.display = "block";
+    } else {
+        alert("パスワードが違います");
+    }
+}
+</script>
+
+</body>
+</html>
