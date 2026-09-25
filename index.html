@@ -15,42 +15,62 @@
       margin: 0;
       background: #f0f0f0;
     }
-    #qrcode { margin-top: 20px; }
-    #count { margin-top: 10px; font-size: 18px; color: #333; }
+
+    #qrcode {
+      margin-top: 20px;
+    }
+
+    #count {
+      margin-top: 10px;
+      font-size: 24px;
+      color: #333;
+      font-weight: bold;
+    }
   </style>
 </head>
+
 <body>
   <h1>ランダムQRコード（8桁英数字）</h1>
   <p style="font-size: 20px; color: #444;">番号覚えてね！</p>
+
   <div id="qrcode"></div>
+
+  <!-- QRコードの中身を表示 -->
   <div id="count"></div>
 
-  <!-- ★ダウンロードリンクを追加 -->
-  <p><a id="downloadLink" href="" download>QR画像をダウンロード</a></p>
+  <p>
+    <a id="downloadLink" href="" download>QR画像をダウンロード</a>
+  </p>
 
   <script>
     const usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]");
-    let count = parseInt(localStorage.getItem("count") || "0");
 
     function generateRandomCode(length) {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
       let code;
+
       do {
         code = "";
+
         for (let i = 0; i < length; i++) {
           code += chars[Math.floor(Math.random() * chars.length)];
         }
+
       } while (usedCodes.includes(code));
 
       usedCodes.push(code);
       localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
+
       return code;
     }
 
     window.addEventListener("load", () => {
+      // 8桁のランダム英数字を生成
       const code = generateRandomCode(8);
+
       const qrContainer = document.getElementById("qrcode");
 
+      // QRコード生成
       new QRCode(qrContainer, {
         text: code,
         width: 256,
@@ -60,19 +80,22 @@
         correctLevel: QRCode.CorrectLevel.H
       });
 
-      count++;
-      localStorage.setItem("count", count);
-      document.getElementById("count").textContent = `番号: ${count}`;
+      // QRコードの中身（8桁英数字）を表示
+      document.getElementById("count").textContent = code;
 
-      // ★スマホ対応：QRコードを画像化してダウンロードリンクに設定
+      // ダウンロードリンク設定
       setTimeout(() => {
         const canvas = qrContainer.querySelector("canvas");
-        const imageURL = canvas.toDataURL("image/png");
-        const link = document.getElementById("downloadLink");
-        link.href = imageURL;
-        link.download = `${code}.png`;
+
+        if (canvas) {
+          const imageURL = canvas.toDataURL("image/png");
+          const link = document.getElementById("downloadLink");
+
+          link.href = imageURL;
+          link.download = `${code}.png`;
+        }
       }, 500);
     });
   </script>
 </body>
-</html>                                                                                                                                                                                  
+</html>
