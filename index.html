@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>ランダムQRコード生成サイト</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body {
       font-family: sans-serif;
@@ -14,6 +15,8 @@
       height: 100vh;
       margin: 0;
       background: #f0f0f0;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
     #qrcode {
@@ -25,22 +28,68 @@
       font-size: 24px;
       color: #333;
       font-weight: bold;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      user-select: all;
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    }
+
+    .controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    a#downloadLink {
+      text-decoration: none;
+      color: #fff;
+      background: #0078d4;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    button#copyButton {
+      background: #28a745;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button#copyButton:active,
+    a#downloadLink:active {
+      transform: translateY(1px);
+    }
+
+    #copyStatus {
+      margin-left: 8px;
+      font-size: 14px;
+      color: #333;
+      min-width: 120px;
     }
   </style>
 </head>
 
 <body>
   <h1>ランダムQRコード（8桁英数字）</h1>
-  <p style="font-size: 20px; color: #444;">番号覚えてね！</p>
 
-  <div id="qrcode"></div>
 
-  <!-- QRコードの中身を表示 -->
-  <div id="count"></div>
+  <div id="qrcode" aria-hidden="true"></div>
 
-  <p>
+  <!-- QRコードの中身を表示（タップでコピー可能） -->
+  <div id="count" role="button" aria-label="コードをコピー" title="タップでコピー"></div>
+
+  <div class="controls">
     <a id="downloadLink" href="" download>QR画像をダウンロード</a>
-  </p>
+    <button id="copyButton" type="button" aria-label="コードをコピーボタン">コピー</button>
+    <div id="copyStatus" aria-live="polite"></div>
+  </div>
 
   <script>
     const usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]");
@@ -51,17 +100,49 @@
 
       do {
         code = "";
-
         for (let i = 0; i < length; i++) {
           code += chars[Math.floor(Math.random() * chars.length)];
         }
-
       } while (usedCodes.includes(code));
 
       usedCodes.push(code);
       localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
 
       return code;
+    }
+
+    // 汎用コピー関数（Clipboard APIが使えない場合のフォールバックあり）
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+      } else {
+        return new Promise((resolve, reject) => {
+          try {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            textarea.style.left = "-9999px";
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            const ok = document.execCommand("copy");
+            document.body.removeChild(textarea);
+            if (ok) resolve();
+            else reject(new Error("execCommand failed"));
+          } catch (err) {
+            reject(err);
+          }
+        });
+      }
+    }
+
+    function showTemporaryStatus(message, timeout = 2000) {
+      const status = document.getElementById("copyStatus");
+      status.textContent = message;
+      clearTimeout(status._timer);
+      status._timer = setTimeout(() => {
+        status.textContent = "";
+      }, timeout);
     }
 
     window.addEventListener("load", () => {
@@ -81,9 +162,31 @@
       });
 
       // QRコードの中身（8桁英数字）を表示
-      document.getElementById("count").textContent = code;
+      const countEl = document.getElementById("count");
+      countEl.textContent = code;
 
-      // ダウンロードリンク設定
+      // タップ（クリック）でコピーできるようにする
+      countEl.addEventListener("click", async () => {
+        try {
+          await copyToClipboard(code);
+          showTemporaryStatus("コピーしました");
+        } catch (err) {
+          showTemporaryStatus("コピーに失敗しました");
+        }
+      });
+
+      // コピー用ボタン
+      const copyButton = document.getElementById("copyButton");
+      copyButton.addEventListener("click", async () => {
+        try {
+          await copyToClipboard(code);
+          showTemporaryStatus("コピーしました");
+        } catch (err) {
+          showTemporaryStatus("コピーに失敗しました");
+        }
+      });
+
+      // ダウンロードリンク設定（canvasから画像を取得）
       setTimeout(() => {
         const canvas = qrContainer.querySelector("canvas");
 
