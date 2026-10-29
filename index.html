@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root {
-      --qr-max-size: 260px; /* 少しコンパクトに調整しました */
+      --qr-max-size: 260px;
       --btn-height: 48px;
       --btn-font: 18px;
     }
@@ -31,7 +31,6 @@
       text-align: center;
     }
 
-    /* QRコンテナを中央にきれいに配置 */
     #qrcode {
       margin-top: 8px;
       width: min(calc(100vw - 40px), var(--qr-max-size));
@@ -46,7 +45,6 @@
       box-sizing: border-box;
     }
 
-    /* 生成されるcanvasやimgがコンテナ内にしっかり収まるようにする */
     #qrcode canvas,
     #qrcode img {
       width: 100% !important;
@@ -54,7 +52,6 @@
       display: block;
     }
 
-    /* コード表示（タップでコピー） */
     #count {
       margin-top: 12px;
       font-size: 20px;
@@ -185,13 +182,10 @@
       }, timeout);
     }
 
-    window.addiEventListener("load", () => {}); // 念のため
-
     window.addEventListener("load", () => {
       const code = generateRandomCode(8);
       const qrContainer = document.getElementById("qrcode");
 
-      // 生成サイズを固定の適切な解像度（例: 256px）にする
       const qrSize = 256;
 
       const qr = new QRCode(qrContainer, {
@@ -203,7 +197,6 @@
         correctLevel: QRCode.CorrectLevel.H
       });
 
-      // ダウンロード用の画像URLを作成
       setTimeout(() => {
         const canvas = qrContainer.querySelector("canvas");
         if (canvas) {
