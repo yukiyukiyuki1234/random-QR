@@ -6,9 +6,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root{
-      --qr-max-size: 360px;
-      --qr-margin: 20px;
+    :root {
+      --qr-max-size: 260px; /* 少しコンパクトに調整しました */
       --btn-height: 48px;
       --btn-font: 18px;
     }
@@ -27,16 +26,16 @@
     }
 
     h1 {
-      font-size: 20px;
+      font-size: 18px;
       margin: 8px 0 12px;
       text-align: center;
     }
 
-    /* QRコンテナを中央で大きく表示 */
+    /* QRコンテナを中央にきれいに配置 */
     #qrcode {
       margin-top: 8px;
       width: min(calc(100vw - 40px), var(--qr-max-size));
-      height: auto;
+      height: min(calc(100vw - 40px), var(--qr-max-size));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -44,15 +43,18 @@
       padding: 12px;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      box-sizing: border-box;
     }
 
-    #qrcode canvas {
+    /* 生成されるcanvasやimgがコンテナ内にしっかり収まるようにする */
+    #qrcode canvas,
+    #qrcode img {
       width: 100% !important;
-      height: auto !important;
+      height: 100% !important;
       display: block;
     }
 
-    /* コード表示（タップでコピー）を大きく */
+    /* コード表示（タップでコピー） */
     #count {
       margin-top: 12px;
       font-size: 20px;
@@ -76,7 +78,6 @@
       justify-content: center;
     }
 
-    /* ボタン類を大きく、押しやすく */
     a#downloadLink,
     button#copyButton {
       text-decoration: none;
@@ -108,16 +109,15 @@
       text-align: center;
     }
 
-    /* 小さい画面ではさらに大きく */
     @media (max-width: 420px) {
       :root {
-        --qr-max-size: calc(100vw - 40px);
-        --btn-height: 56px;
-        --btn-font: 20px;
+        --qr-max-size: 240px;
+        --btn-height: 52px;
+        --btn-font: 18px;
       }
-      h1 { font-size: 18px; }
-      #count { font-size: 22px; padding: 14px 18px; }
-      a#downloadLink, button#copyButton { min-width: 160px; }
+      h1 { font-size: 16px; }
+      #count { font-size: 20px; padding: 12px 16px; }
+      a#downloadLink, button#copyButton { min-width: 150px; }
     }
   </style>
 </head>
@@ -185,34 +185,28 @@
       }, timeout);
     }
 
+    window.addiEventListener("load", () => {}); // 念のため
+
     window.addEventListener("load", () => {
       const code = generateRandomCode(8);
       const qrContainer = document.getElementById("qrcode");
 
-      // 画面幅に合わせたサイズを計算（余白を考慮）
-      const maxWidth = Math.min(window.innerWidth - 40, 360);
-      const size = Math.floor(maxWidth);
+      // 生成サイズを固定の適切な解像度（例: 256px）にする
+      const qrSize = 256;
 
-      // 高解像度対応: devicePixelRatio を使って内部canvasを大きめに作る
-      const ratio = window.devicePixelRatio || 1;
-      const pixelSize = size * ratio;
-
-      // QRCodeライブラリで一旦大きめのcanvasを作り、CSSで縮小表示する
       const qr = new QRCode(qrContainer, {
         text: code,
-        width: pixelSize,
-        height: pixelSize,
+        width: qrSize,
+        height: qrSize,
         colorDark: "#000",
         colorLight: "#fff",
         correctLevel: QRCode.CorrectLevel.H
       });
 
-      // 表示用にCSS幅を設定（canvasはCSSで100%幅にしている）
-      // QR生成後にダウンロード用の画像URLを作る
+      // ダウンロード用の画像URLを作成
       setTimeout(() => {
         const canvas = qrContainer.querySelector("canvas");
         if (canvas) {
-          // canvasを一旦オフスクリーンでリサイズして高解像度PNGを作る場合はここで処理可能
           const imageURL = canvas.toDataURL("image/png");
           const link = document.getElementById("downloadLink");
           link.href = imageURL;
@@ -241,8 +235,6 @@
         }
       });
     });
-
-    // 画面回転やリサイズ時に再生成したい場合はここで処理を追加
   </script>
 </body>
 </html>
