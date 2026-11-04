@@ -20,7 +20,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
       min-height: 100vh;
       margin: 0;
       padding: 20px;
@@ -71,35 +70,36 @@
     }
 
     .controls {
+      width: min(100%, 420px);
       margin-top: 14px;
       display: flex;
       gap: 10px;
       align-items: center;
-      flex-wrap: wrap;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     #downloadLink,
     #copyButton {
-      min-width: 150px;
+      flex: 1;
+      min-width: 180px;
       height: var(--btn-height);
       padding: 0 16px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-
       font-family: inherit;
       font-size: var(--btn-font);
       font-weight: 700;
-      line-height: var(--btn-height);
+      line-height: 1.2;
       text-decoration: none;
       color: #fff;
-
       border: none;
       border-radius: 10px;
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       box-sizing: border-box;
+      white-space: nowrap;
     }
 
     #downloadLink {
@@ -128,33 +128,11 @@
       text-align: center;
     }
 
-    /* 下部の案内表示 */
-    .save-info {
-      width: min(100%, 420px);
-      margin-top: 18px;
-      padding: 14px 16px;
-      box-sizing: border-box;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-      text-align: left;
-    }
-
-    .save-info h2 {
-      margin: 0 0 8px;
-      font-size: 17px;
-      text-align: center;
-    }
-
-    .save-info p {
-      margin: 6px 0;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .save-info .important {
-      color: #005ea8;
+    .screenshot-info {
+      margin-top: 6px;
+      font-size: 15px;
       font-weight: 700;
+      color: #333;
       text-align: center;
     }
 
@@ -162,7 +140,11 @@
       :root {
         --qr-max-size: 240px;
         --btn-height: 52px;
-        --btn-font: 18px;
+        --btn-font: 17px;
+      }
+
+      body {
+        padding: 16px;
       }
 
       h1 {
@@ -171,17 +153,17 @@
 
       #count {
         font-size: 20px;
-        padding: 12px 16px;
+      }
+
+      .controls {
+        width: 100%;
       }
 
       #downloadLink,
       #copyButton {
         width: 100%;
         max-width: 300px;
-      }
-
-      .controls {
-        width: 100%;
+        flex: none;
       }
     }
   </style>
@@ -201,7 +183,13 @@
   ></div>
 
   <div class="controls">
-    #
+    <a
+      id="downloadLink"
+      class="disabled"
+      href="#"
+      download
+      aria-label="QR画像をダウンロード"
+    >
       QR画像をダウンロード
     </a>
 
@@ -216,35 +204,14 @@
     <div id="copyStatus" aria-live="polite"></div>
   </div>
 
-  <!-- 下部に追加した案内 -->
-  <div class="save-info">
-    <h2>QRコードの保存方法</h2>
-
-    <p class="important">
-      この画面をスクリーンショットして保存することもできます。
-    </p>
-
-    <p>
-      「QR画像をダウンロード」を押すと、QRコードがPNG画像として保存されます。
-    </p>
-
-    <p>
-      iPhoneの場合は、通常「ファイル」アプリ内の
-      「ダウンロード」フォルダから確認できます。
-    </p>
-
-    <p>
-      ※使用するブラウザやiPhoneの設定によって、保存方法や保存先が異なる場合があります。
-    </p>
+  <div class="screenshot-info">
+    スクリーンショットも可能
   </div>
 
   <script>
     const STORAGE_KEY = "usedCodes";
     let qrImageURL = null;
 
-    /**
-     * 保存済みコード一覧を取得
-     */
     function getUsedCodes() {
       try {
         const savedData = localStorage.getItem(STORAGE_KEY);
@@ -257,9 +224,6 @@
       }
     }
 
-    /**
-     * 保存済みコード一覧を保存
-     */
     function saveUsedCodes(codes) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
@@ -268,9 +232,6 @@
       }
     }
 
-    /**
-     * ランダムな英数字コードを生成
-     */
     function generateRandomCode(length) {
       const chars =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -288,20 +249,11 @@
       } while (usedCodes.includes(code));
 
       usedCodes.push(code);
-
-      /*
-       * localStorageが大きくなりすぎないように、
-       * 最新5000件のみ保存
-       */
-      const limitedCodes = usedCodes.slice(-5000);
-      saveUsedCodes(limitedCodes);
+      saveUsedCodes(usedCodes.slice(-5000));
 
       return code;
     }
 
-    /**
-     * crypto APIを利用して乱数を生成
-     */
     function getSecureRandomNumber(max) {
       if (window.crypto && window.crypto.getRandomValues) {
         const randomArray = new Uint32Array(1);
@@ -313,9 +265,6 @@
       return Math.floor(Math.random() * max);
     }
 
-    /**
-     * クリップボードへコピー
-     */
     function copyToClipboard(text) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         return navigator.clipboard.writeText(text);
@@ -349,14 +298,10 @@
       });
     }
 
-    /**
-     * 一時的なメッセージを表示
-     */
     function showTemporaryStatus(message, timeout = 2000) {
       const status = document.getElementById("copyStatus");
 
       status.textContent = message;
-
       clearTimeout(status._timer);
 
       status._timer = setTimeout(() => {
@@ -364,9 +309,6 @@
       }, timeout);
     }
 
-    /**
-     * コードをコピーする共通処理
-     */
     async function handleCopy(code) {
       try {
         await copyToClipboard(code);
@@ -377,47 +319,51 @@
       }
     }
 
-    /**
-     * QRコードのCanvasをPNGのBlobに変換して
-     * ダウンロードリンクを作成
-     */
     function prepareDownload(code) {
       const qrContainer = document.getElementById("qrcode");
       const canvas = qrContainer.querySelector("canvas");
+      const qrImage = qrContainer.querySelector("img");
       const downloadLink = document.getElementById("downloadLink");
 
-      if (!canvas) {
-        showTemporaryStatus("QR画像の作成に失敗しました");
+      /*
+       * QRCode.jsがcanvasを作った場合
+       */
+      if (canvas) {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              showTemporaryStatus("画像データの作成に失敗しました");
+              return;
+            }
+
+            if (qrImageURL) {
+              URL.revokeObjectURL(qrImageURL);
+            }
+
+            qrImageURL = URL.createObjectURL(blob);
+            downloadLink.href = qrImageURL;
+            downloadLink.download = `${code}.png`;
+            downloadLink.classList.remove("disabled");
+          },
+          "image/png"
+        );
+
         return;
       }
 
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            showTemporaryStatus("画像データの作成に失敗しました");
-            return;
-          }
+      /*
+       * QRCode.jsがimgを作った場合
+       */
+      if (qrImage && qrImage.src) {
+        downloadLink.href = qrImage.src;
+        downloadLink.download = `${code}.png`;
+        downloadLink.classList.remove("disabled");
+        return;
+      }
 
-          /*
-           * 古いBlob URLがあれば解放する
-           */
-          if (qrImageURL) {
-            URL.revokeObjectURL(qrImageURL);
-          }
-
-          qrImageURL = URL.createObjectURL(blob);
-
-          downloadLink.href = qrImageURL;
-          downloadLink.download = `${code}.png`;
-          downloadLink.classList.remove("disabled");
-        },
-        "image/png"
-      );
+      showTemporaryStatus("QR画像の作成に失敗しました");
     }
 
-    /**
-     * 初期処理
-     */
     window.addEventListener("load", () => {
       const code = generateRandomCode(8);
       const qrContainer = document.getElementById("qrcode");
@@ -425,9 +371,6 @@
       const copyButton = document.getElementById("copyButton");
       const downloadLink = document.getElementById("downloadLink");
 
-      /*
-       * QRコードを作成
-       */
       new QRCode(qrContainer, {
         text: code,
         width: 256,
@@ -437,29 +380,19 @@
         correctLevel: QRCode.CorrectLevel.H
       });
 
-      /*
-       * 生成された8桁コードを表示
-       */
       countElement.textContent = code;
 
       /*
-       * QRCode.jsによるCanvas作成後に
-       * ダウンロード用データを準備
+       * QRコードの描画完了を少し待つ
        */
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         prepareDownload(code);
-      });
+      }, 100);
 
-      /*
-       * コード部分をタップしてコピー
-       */
       countElement.addEventListener("click", () => {
         handleCopy(code);
       });
 
-      /*
-       * キーボード操作にも対応
-       */
       countElement.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
@@ -467,16 +400,10 @@
         }
       });
 
-      /*
-       * コピーボタン
-       */
       copyButton.addEventListener("click", () => {
         handleCopy(code);
       });
 
-      /*
-       * ダウンロードボタンを押した際の表示
-       */
       downloadLink.addEventListener("click", (event) => {
         if (downloadLink.classList.contains("disabled")) {
           event.preventDefault();
@@ -484,16 +411,10 @@
           return;
         }
 
-        showTemporaryStatus(
-          "ダウンロードを開始しました。ファイルアプリをご確認ください。",
-          3500
-        );
+        showTemporaryStatus("ダウンロードを開始しました", 3000);
       });
     });
 
-    /*
-     * ページを閉じる際にBlob URLを解放
-     */
     window.addEventListener("beforeunload", () => {
       if (qrImageURL) {
         URL.revokeObjectURL(qrImageURL);
