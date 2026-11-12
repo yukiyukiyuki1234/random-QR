@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <title>ランダムQRコード生成サイト</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">\</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -79,7 +80,6 @@
       flex-wrap: wrap;
     }
 
-    #downloadLink,
     #copyButton {
       flex: 1;
       min-width: 180px;
@@ -97,27 +97,14 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      background: #28a745;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       box-sizing: border-box;
       white-space: nowrap;
     }
 
-    #downloadLink {
-      background: #0078d4;
-    }
-
-    #copyButton {
-      background: #28a745;
-    }
-
-    #downloadLink:active,
     #copyButton:active {
       transform: scale(0.97);
-    }
-
-    #downloadLink.disabled {
-      opacity: 0.5;
-      pointer-events: none;
     }
 
     #copyStatus {
@@ -159,7 +146,6 @@
         width: 100%;
       }
 
-      #downloadLink,
       #copyButton {
         width: 100%;
         max-width: 300px;
@@ -183,16 +169,6 @@
   ></div>
 
   <div class="controls">
-    <a
-      id="downloadLink"
-      class="disabled"
-      href="#"
-      download
-      aria-label="QR画像をダウンロード"
-    >
-      QR画像をダウンロード
-    </a>
-
     <button
       id="copyButton"
       type="button"
@@ -210,7 +186,6 @@
 
   <script>
     const STORAGE_KEY = "usedCodes";
-    let qrImageURL = null;
 
     function getUsedCodes() {
       try {
@@ -230,6 +205,17 @@
       } catch (error) {
         console.error("コード履歴の保存に失敗しました。", error);
       }
+    }
+
+    function getSecureRandomNumber(max) {
+      if (window.crypto && window.crypto.getRandomValues) {
+        const randomArray = new Uint32Array(1);
+        window.crypto.getRandomValues(randomArray);
+
+        return randomArray[0] % max;
+      }
+
+      return Math.floor(Math.random() * max);
     }
 
     function generateRandomCode(length) {
@@ -252,17 +238,6 @@
       saveUsedCodes(usedCodes.slice(-5000));
 
       return code;
-    }
-
-    function getSecureRandomNumber(max) {
-      if (window.crypto && window.crypto.getRandomValues) {
-        const randomArray = new Uint32Array(1);
-        window.crypto.getRandomValues(randomArray);
-
-        return randomArray[0] % max;
-      }
-
-      return Math.floor(Math.random() * max);
     }
 
     function copyToClipboard(text) {
@@ -319,57 +294,11 @@
       }
     }
 
-    function prepareDownload(code) {
-      const qrContainer = document.getElementById("qrcode");
-      const canvas = qrContainer.querySelector("canvas");
-      const qrImage = qrContainer.querySelector("img");
-      const downloadLink = document.getElementById("downloadLink");
-
-      /*
-       * QRCode.jsがcanvasを作った場合
-       */
-      if (canvas) {
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              showTemporaryStatus("画像データの作成に失敗しました");
-              return;
-            }
-
-            if (qrImageURL) {
-              URL.revokeObjectURL(qrImageURL);
-            }
-
-            qrImageURL = URL.createObjectURL(blob);
-            downloadLink.href = qrImageURL;
-            downloadLink.download = `${code}.png`;
-            downloadLink.classList.remove("disabled");
-          },
-          "image/png"
-        );
-
-        return;
-      }
-
-      /*
-       * QRCode.jsがimgを作った場合
-       */
-      if (qrImage && qrImage.src) {
-        downloadLink.href = qrImage.src;
-        downloadLink.download = `${code}.png`;
-        downloadLink.classList.remove("disabled");
-        return;
-      }
-
-      showTemporaryStatus("QR画像の作成に失敗しました");
-    }
-
     window.addEventListener("load", () => {
       const code = generateRandomCode(8);
       const qrContainer = document.getElementById("qrcode");
       const countElement = document.getElementById("count");
       const copyButton = document.getElementById("copyButton");
-      const downloadLink = document.getElementById("downloadLink");
 
       new QRCode(qrContainer, {
         text: code,
@@ -381,13 +310,6 @@
       });
 
       countElement.textContent = code;
-
-      /*
-       * QRコードの描画完了を少し待つ
-       */
-      setTimeout(() => {
-        prepareDownload(code);
-      }, 100);
 
       countElement.addEventListener("click", () => {
         handleCopy(code);
@@ -403,22 +325,6 @@
       copyButton.addEventListener("click", () => {
         handleCopy(code);
       });
-
-      downloadLink.addEventListener("click", (event) => {
-        if (downloadLink.classList.contains("disabled")) {
-          event.preventDefault();
-          showTemporaryStatus("画像を準備しています");
-          return;
-        }
-
-        showTemporaryStatus("ダウンロードを開始しました", 3000);
-      });
-    });
-
-    window.addEventListener("beforeunload", () => {
-      if (qrImageURL) {
-        URL.revokeObjectURL(qrImageURL);
-      }
     });
   </script>
 </body>
